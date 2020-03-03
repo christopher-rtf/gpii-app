@@ -23,7 +23,7 @@
      * Represents the QSS toggle widget.
      */
     fluid.defaults("gpii.qssWidget.toggle", {
-        gradeNames: ["fluid.viewComponent", "gpii.psp.selectorsTextRenderer"],
+        gradeNames: ["fluid.viewComponent", "gpii.psp.heightObservable", "gpii.psp.selectorsTextRenderer"],
 
         selectors: {
             toggleButton: ".flc-toggleButton",

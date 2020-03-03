@@ -23,7 +23,7 @@
      * Represents the QSS mouse widget.
      */
     fluid.defaults("gpii.qssWidget.mouse", {
-        gradeNames: ["fluid.viewComponent", "gpii.psp.selectorsTextRenderer"],
+        gradeNames: ["fluid.viewComponent", "gpii.psp.heightObservable", "gpii.psp.selectorsTextRenderer"],
 
         selectors: {
             mouseSpeed: ".flc-qssMouseWidget-mouseSpeed",

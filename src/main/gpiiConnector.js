@@ -412,7 +412,7 @@ gpii.app.dev.gpiiConnector.applyPrefSetImages = function (prefSets) {
  * Updates the schemas of specific settings.
  * This is a temporary measure and settings should be provided properly by gpii-universal.
  * This work is described in GPII-3608 and the fixes required in gpii-universal are described in GPII-3634.
- * @param {Component} systemLanguageListener - The `gpii.windows.language` instance
+ * @param {Component} systemLanguageListener - The `gpii.###.language` instance
  * @param {Object} qssSettingMessages - The messages bundle. This is needed to provide correct (and synced with the QS)
  * names for different settings
  * @param {Object} tweakedSettingOptions - Useful options for the tweaked settings
@@ -423,8 +423,8 @@ gpii.app.dev.gpiiConnector.tweakSettingSchemas = function (systemLanguageListene
         if (setting.path === tweakedSettingOptions.paths.language) {
             setting.schema["enum"] = fluid.keys(systemLanguageListener.model.installedLanguages);
         } else if (setting.path === tweakedSettingOptions.paths.screenScale) {
-            setting.schema.min = gpii.windows.display.getScreenDpi().minimum;
-            setting.schema.max = gpii.windows.display.getScreenDpi().maximum;
+            setting.schema.min = gpii.xplat.display.getScreenDpi().minimum;
+            setting.schema.max = gpii.xplat.display.getScreenDpi().maximum;
             // Get the proper title for the setting.
             // Note that this would also be affected by i18n, once we have translations for the QS settings
             setting.schema.title = qssSettingMessages["common-DPIScale"].title;
@@ -435,7 +435,7 @@ gpii.app.dev.gpiiConnector.tweakSettingSchemas = function (systemLanguageListene
 /**
  * A decorator for the received preferences which applies specific property tweaks where needed.
  * This it to be used as a temporary measure until corresponding functionality is introduced in the gpii-universal.
- * @param {Component} systemLanguageListener - The `gpii.windows.language` instance
+ * @param {Component} systemLanguageListener - The `gpii.###.language` instance
  * @param {Object} messages - The messages bundle. This is needed to provide correct (and synced with the QS)
  * names for different settings
  * @param {Object} tweakedSettingOptions - Useful options for the tweaked settings

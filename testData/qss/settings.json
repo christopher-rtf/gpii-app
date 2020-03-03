@@ -31,11 +31,11 @@
         "schema": {
             "type": "number",
             "min": {
-                "type": "gpii.windows.display.getScreenDpi",
+                "type": "gpii.app.display.getScreenDpi",
                 "path": "minimum"
             },
             "max": {
-                "type": "gpii.windows.display.getScreenDpi",
+                "type": "gpii.app.display.getScreenDpi",
                 "path": "maximum"
             },
             "divisibleBy": 1,

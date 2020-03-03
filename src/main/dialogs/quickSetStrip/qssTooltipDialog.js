@@ -31,11 +31,13 @@ var gpii = fluid.registerNamespace("gpii");
  * a new QSS button is focused and the tooltip needs to change.
  */
 fluid.defaults("gpii.app.qssTooltipDialog", {
+    // TODO: make "offScreenHidable" an OS-specific configuration parameter (enabled on Windows, disabled on macOS and probably Ubuntu)
+    //       [this is necessary on macOS (and probably Ubuntu) to hide the QuickStrip window's tooltips]
     gradeNames: [
         "gpii.app.dialog",
         "gpii.app.blurrable",
-        "gpii.app.delayedDialog",
-        "gpii.app.dialog.offScreenHidable"
+        "gpii.app.delayedDialog"/*,
+        "gpii.app.dialog.offScreenHidable"*/
     ],
 
     arrowWidth: 18,

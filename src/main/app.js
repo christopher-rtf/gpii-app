@@ -17,6 +17,10 @@
 var fluid   = require("infusion");
 var gpii    = fluid.registerNamespace("gpii");
 
+// TODO: replace these stubs with non-OS functions which redirect to GPII/windows, GPII/gpii-macos, GPII/gpii-os-stubs, etc.
+require("../../tempStubs/gpii-app-zoom/src/appZoom.js");
+require("../../tempStubs/windowMessages/src/windowMessage.js");
+
 require("../shared/channelUtils.js");
 require("../shared/messageBundles.js");
 require("../shared/utils.js");
@@ -36,6 +40,8 @@ require("./surveys/surveyManager.js");
 require("./tray.js");
 require("./userErrorsHandler.js");
 require("./metrics.js");
+require("./displayDpi.js");
+require("./language.js");
 
 // enhance the normal require to work with .json5 files
 require("json5/lib/register");
@@ -54,6 +60,8 @@ gpii.app.electronAppListener = function () {
 };
 require("electron").app.on("ready", gpii.app.electronAppListener);
 // Override default behaviour - don't exit process once all windows are closed
+// TODO: determine if we must override this on any OS; we were commenting out the following line on macOS,
+//       but in continued testing it did not seem to have any negative effect leaving it enabled on all OSs
 require("electron").app.on("window-all-closed", fluid.identity);
 
 /**
@@ -182,7 +190,7 @@ fluid.defaults("gpii.app", {
             createOnEvent: "onPSPPrerequisitesReady"
         },
         systemLanguageListener: {
-            type: "gpii.windows.language",
+            type: "gpii.app.language",
             options: {
                 model: {
                     configuredLanguage: "{messageBundles}.model.locale"
@@ -627,13 +635,17 @@ gpii.app.handleSessionStop = function (that, keyedOutUserToken) {
  * @param {Object} result Set a 'value' field to specify a return value.
  */
 gpii.app.windowMessage = function (that, hwnd, msg, wParam, lParam, result) {
-    // https://msdn.microsoft.com/library/aa376889
-    var WM_QUERYENDSESSION = 0x11;
-    if (msg === WM_QUERYENDSESSION) {
-        fluid.log(fluid.logLevel.FATAL, "System shutdown detected.");
-        that.exit();
-        result.value = 0;
-    }
+    // TODO: move this function to GPII/windows
+    // in the meantime...just return
+    return;
+
+//     // https://msdn.microsoft.com/library/aa376889
+//     var WM_QUERYENDSESSION = 0x11;
+//     if (msg === WM_QUERYENDSESSION) {
+//         fluid.log(fluid.logLevel.FATAL, "System shutdown detected.");
+//         that.exit();
+//         result.value = 0;
+//     }
 };
 
 // A wrapper that wraps gpii.app as a subcomponent. This is the grade need by configs/app.json

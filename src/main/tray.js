@@ -16,7 +16,7 @@
 
 var fluid    = require("infusion");
 var electron = require("electron");
-var child_process = require("child_process");
+// var child_process = require("child_process");
 
 var Tray           = electron.Tray;
 var gpii           = fluid.registerNamespace("gpii");
@@ -27,9 +27,16 @@ var gpii           = fluid.registerNamespace("gpii");
 fluid.defaults("gpii.app.tray", {
     gradeNames: ["fluid.modelComponent", "{that}.options.trayType"],
     icons: {
-        keyedIn: "%gpii-app/src/icons/Morphic-tray-icon-green.ico",
-        keyedOut: "%gpii-app/src/icons/Morphic-tray-icon-white.ico",
-        highContrast: "%gpii-app/src/icons/Morphic-tray-icon-white.ico"
+        keyedIn: "%gpii-app/src/icons/Morphic-tray-icon-green-antialiased.png",
+        keyedOut: "%gpii-app/src/icons/Morphic-tray-icon-black-antialiased.png",
+        highContrast: "%gpii-app/src/icons/Morphic-tray-icon-black-antialiased.png"
+//        keyedOut: "%gpii-app/src/icons/Morphic-tray-icon-white-antialiased.png",
+//        highContrast: "%gpii-app/src/icons/Morphic-tray-icon-white-antialiased.png"
+
+/* -- TODO: THESE DEFAULTS ARE FOR WINDOWS; REFACTOR -- */
+//        keyedIn: "%gpii-app/src/icons/Morphic-tray-icon-green.ico",
+//        keyedOut: "%gpii-app/src/icons/Morphic-tray-icon-white.ico",
+//        highContrast: "%gpii-app/src/icons/Morphic-tray-icon-white.ico"
     },
     components: {
         menu: {
@@ -316,27 +323,31 @@ gpii.app.trayButton.notifications = {
  * @param {Component} that The gpii.app.trayButton instance.
  */
 gpii.app.trayButton.startProcess = function (that) {
-    fluid.log("Starting TrayButton process.");
-    var child = child_process.spawn(fluid.module.resolvePath(that.options.trayButtonExe), []);
-    child.stdout.on("data", function (buffer) {
-        var messages = buffer.toString().trim().split(/[\r\n]+/);
-        fluid.each(messages, function (message) {
-            fluid.log("traybutton: ", message);
-            if (message.startsWith("fail:")) {
-                try {
-                    fluid.fail("traybutton", message);
-                } catch (e) {
-                    // Ignore the exception, so more lines can be processed.
-                }
-            }
-        });
-    });
-    child.on("exit", function (code) {
-        fluid.log("TrayButton process terminated.");
-        if (code && !fluid.isDestroyed(that)) {
-            that.startProcess();
-        }
-    });
+    // TODO: move this function to GPII/windows
+    // in the meantime...just return
+    return;
+    
+//    fluid.log("Starting TrayButton process.");
+//    var child = child_process.spawn(fluid.module.resolvePath(that.options.trayButtonExe), []);
+//    child.stdout.on("data", function (buffer) {
+//        var messages = buffer.toString().trim().split(/[\r\n]+/);
+//        fluid.each(messages, function (message) {
+//            fluid.log("traybutton: ", message);
+//            if (message.startsWith("fail:")) {
+//                try {
+//                    fluid.fail("traybutton", message);
+//                } catch (e) {
+//                    // Ignore the exception, so more lines can be processed.
+//                }
+//            }
+//        });
+//    });
+//    child.on("exit", function (code) {
+//        fluid.log("TrayButton process terminated.");
+//        if (code && !fluid.isDestroyed(that)) {
+//            that.startProcess();
+//        }
+//    });
 };
 
 /**

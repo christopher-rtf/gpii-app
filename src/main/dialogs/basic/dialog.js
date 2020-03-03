@@ -130,7 +130,10 @@ fluid.defaults("gpii.app.dialog", {
             alwaysOnTop: true,
             skipTaskbar: true,
             type: "toolbar",
-            resizable: false
+            resizable: false,
+            webPreferences: {
+                nodeIntegration: true
+            }
         },
         filePrefixPath: "src/renderer",
         fileSuffixPath: null,           // e.g. "waitDialog/index.html"
@@ -345,8 +348,12 @@ gpii.app.dialog.makeDialog = function (that, windowOptions, url, params) {
     if (!that.options.config.destroyOnClose) {
         // As proposed in https://github.com/electron/electron/issues/6702
         dialog.on("close", function (e) {
-            that.hide();
-            e.preventDefault();
+            // TODO: make this configurable on an OS-specific basis
+            //.      [For Windows and maybe Ubuntu, execute this code; for macOS we must _not_
+            //.      execute this code (or else our app will not close)
+
+            // that.hide();
+            // e.preventDefault();
         });
     }
 

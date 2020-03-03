@@ -18,7 +18,8 @@ var os = require("os"),
     fluid = require("infusion"),
     electron = require("electron"),
     child_process = require("child_process"),
-    fs = require("fs");
+    fs = require("fs"),
+    path = require("path");
 
 var gpii = fluid.registerNamespace("gpii");
 fluid.registerNamespace("gpii.app");
@@ -29,10 +30,14 @@ fluid.registerNamespace("gpii.app");
  * `false` otherwise.
  */
 gpii.app.isWin10OS = function () {
-    var osRelease = os.release(),
-        delimiter = osRelease.indexOf("."),
-        majorVersion = osRelease.slice(0, delimiter);
-    return majorVersion === "10";
+    // TODO: move this function to GPII/windows
+    // in the meantime...just return false
+    return false;
+    
+//     var osRelease = os.release(),
+//         delimiter = osRelease.indexOf("."),
+//         majorVersion = osRelease.slice(0, delimiter);
+//     return majorVersion === "10";
 };
 
 /**
@@ -420,13 +425,11 @@ gpii.app.filterButtonList = function (siteConfigButtonList, availableButtons) {
  * @param {Object} messages - An object containing messages openUsb component.
  */
 gpii.app.openUSB = function (browserWindow, messageChannel, messages) {
-    gpii.windows.getUserUsbDrives().then(function (paths) {
+    gpii.app.getUserUsbDrives().then(function (paths) {
         if (!paths.length) {
             gpii.app.notifyWindow(browserWindow, messageChannel, messages.noUsbInserted);
         } else {
-            fluid.each(paths, function (path) {
-                child_process.exec("explorer.exe \"" + path + "\"");
-            });
+            gpii.xplat.openDirectories(paths);
         }
     });
 };
@@ -441,33 +444,62 @@ gpii.app.openUSB = function (browserWindow, messageChannel, messages) {
  * @param {Object} messages - An object containing messages openUsb component.
  */
 gpii.app.ejectUSB = function (browserWindow, messageChannel, messages) {
-    // Powershell to invoke the "Eject" verb of the drive icon in my computer, which looks something like:
-    //  ((Shell32.Folder)shell).NameSpace(ShellSpecialFolderConstants.ssfDRIVES) // Get "My Computer"
-    //    .ParseName(x:\)    // Get the drive.
-    //    .InvokeVerb(Eject) // Invoke the "Eject" verb of the drive.
-    // Inspired by https://serverfault.com/a/580298r
-    //
-    // It's possible to perform this in C#, however powershell will be used because it needs to be performed in a
-    // 64-bit process, perhaps due to it interacting with the shell.
-    var command = "$drives = (New-Object -comObject Shell.Application).Namespace(0x11)";
-
-    gpii.windows.getUserUsbDrives().then(function (paths) {
+    gpii.app.getUserUsbDrives().then(function (paths) {
         if (paths.length > 0) {
-            // Call the eject command for each drive.
-            fluid.each(paths, function (path) {
-                command += "; $drives.ParseName('" + path[0] + ":\\').InvokeVerb('Eject')";
-            });
-
-            // The powershell process still needs to hang around, because if the drive is in use it will open a dialog
-            // which is owned by the process.
-            command += "; Sleep 100";
-            // Needs to be called from a 64-bit process
-            gpii.windows.nativeExec("powershell.exe -NoProfile -NonInteractive -ExecutionPolicy ByPass -Command "
-                + command);
+            gpii.xplat.ejectUsbDrives(paths);
         } else {
             gpii.app.notifyWindow(browserWindow, messageChannel, messages.ejectUsbDrives);
         }
     });
+};
+
+/**
+ * Used by the "Open USB" button. Gets the user's USB drives. That is, those without a token file.
+ * If all drives have a token file, then all are returned.
+ *
+ * @param {Array<String>} usbDrives [optional] The root paths to the usb drives to check, omit to check all USB drives
+ * on the system.
+ * @return {Array<String>} Array of paths to each drive.
+ */
+gpii.app.getUserUsbDrives = function (usbDrives) {
+    usbDrives = usbDrives || gpii.xplat.getUsbDrives();
+        
+    var tokenFile = ".gpii-user-token.txt";
+    var promiseTogo = fluid.promise();
+
+    if (usbDrives.length < 1) {
+        // Always return the single drive.
+        promiseTogo.resolve(usbDrives);
+    } else {
+        var promises = [];
+        var result = [];
+
+        // Check each drive for the token file.
+        fluid.each(usbDrives, function (drivePath) {
+            var tokenPath = path.join(drivePath, tokenFile);
+            var promise = fluid.promise();
+            promises.push(promise);
+
+            fs.access(tokenPath, function (err) {
+                if (err) {
+                    // No token file found, so add it to the result.
+                    result.push(drivePath);
+                }
+                promise.resolve(!err);
+            });
+        });
+
+        fluid.promise.sequence(promises).then(function () {
+            if (result.length === 0) {
+                // No drives where added (they all had a token file), then return all of them.
+                promiseTogo.resolve(usbDrives);
+            } else {
+                promiseTogo.resolve(result);
+            }
+        });
+    }
+
+    return promiseTogo;
 };
 
 /**
@@ -480,7 +512,7 @@ gpii.app.ejectUSB = function (browserWindow, messageChannel, messages) {
 gpii.app.getVolumeValue = function (browserWindow, messageChannel) {
     var defaultVolumeValue = 0.5;
     try {
-        var volumeValue = gpii.windows.nativeSettingsHandler.GetVolume().value;
+        var volumeValue = gpii.xplat.nativeSettingsHandler.GetVolume().value;
 
         if (isNaN(volumeValue)) {
             gpii.app.notifyWindow(browserWindow, messageChannel, defaultVolumeValue);
@@ -567,20 +599,24 @@ gpii.app.checkUrl = function (url) {
 };
 
 /**
- * Starting a new process with the gpii.windows.startProfcess
+ * Starting a new process with the gpii.windows.startProcess
  * @param {String} process - file path to the process executable
  * @param {Boolean} fullScreen - true/false if the process to be maximized by default
  */
 gpii.app.startProcess = function (process, fullScreen) {
-    var arg = "", // by default all of the arguments are empty, reserved for future
-        options = {}; // no options by default
-
-    if (fullScreen) {
-        // we are adding the maximized option when the full screen is requested
-        options.windowState = "maximized";
-    }
-    // executing the process
-    gpii.windows.startProcess(process, arg, options);
+    // TODO: move this function to GPII/windows
+    // in the meantime...just return
+    return;
+    
+//    var arg = "", // by default all of the arguments are empty, reserved for future
+//        options = {}; // no options by default
+//
+//    if (fullScreen) {
+//        // we are adding the maximized option when the full screen is requested
+////        options.windowState = "maximized";
+//    }
+//    // executing the process
+//    gpii.windows.startProcess(process, arg, options);
 };
 
 /**
@@ -590,11 +626,14 @@ gpii.app.startProcess = function (process, fullScreen) {
  * @return {Boolean} true if there is a keyData to be execute, false otherwise
  */
 gpii.app.executeKeySequence = function (keyData) {
-    if (fluid.isValue(keyData)) {
-        gpii.windows.sendKeys.send(keyData);
-        return true;
-    } else {
-        fluid.log(fluid.logLevel.WARN, "executeKeySequence: Empty or invalid keyData");
-    }
+    // TODO: move this function to GPII/windows
+    // in the meantime...just return false (which is the fixed return value already)
+
+//    if (fluid.isValue(keyData)) {
+//        gpii.windows.sendKeys.send(keyData);
+//        return true;
+//    } else {
+//        fluid.log(fluid.logLevel.WARN, "executeKeySequence: Empty or invalid keyData");
+//    }
     return false;
 };

@@ -14,7 +14,8 @@
  */
 "use strict";
 
-var fluid = require("infusion");
+var os = require("os"),
+    fluid = require("infusion");
 
 var gpii = fluid.registerNamespace("gpii");
 
@@ -697,7 +698,7 @@ gpii.app.qssWrapper.loadSettings = function (assetsManager, installedLanguages, 
 
     // we double check if this setting exists because can be disabled via siteConfig's buttonList
     if (fluid.isValue(volumeSetting)) {
-        volumeSetting.value = gpii.windows.nativeSettingsHandler.GetVolume().value;
+        volumeSetting.value = gpii.xplat.nativeSettingsHandler.GetVolume().value;
     }
 
     /*

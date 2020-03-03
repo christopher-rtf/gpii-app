@@ -12,6 +12,7 @@ https://github.com/GPII/universal/blob/master/LICENSE.txt
 "use strict";
 
 var app = require("electron").app;
+var os = require("os");
 
 // Perform this check early, do avoid any delay.
 var singleInstance = app.requestSingleInstanceLock();
@@ -34,6 +35,8 @@ dns.lookup = function lookup(hostname, options, callback) {
 var fluid = require("infusion"),
     gpii = fluid.registerNamespace("gpii"),
     kettle = fluid.registerNamespace("kettle");
+
+var xplat = fluid.registerNamespace("gpii.xplat");
 
 fluid.setLogging(true);
 
@@ -58,10 +61,25 @@ app.on("second-instance", function (event, commandLine) {
     }
 });
 
-// this module is loaded relatively slowly
-// it also loads gpii-universal
-// NOTE: if the OS-specific support package was not loaded successfully, the require(".../index.js") function will throw an exception
-require("gpii-windows/index.js");
+// NOTE: the OS-specific module is loaded relatively slowly
+// NOTE: the OS-specific module also loads gpii-universal
+// NOTE: if the OS-specific module was not installed successfully, the require(".../index.js") call below will throw an exception
+// NOTE: we also map the OS-specific module's OS namespace to "gpii.xplat" so that we can reference them from JSON and without redundant checks of os.platform()
+switch (os.platform()) {
+case "darwin":
+   require("gpii-macos/index.js");
+   gpii.xplat = gpii.macos;
+   break;
+case "win32":
+    require("gpii-windows/index.js");
+    gpii.xplat = gpii.windows;
+    break;
+default:
+    // for unknown platforms, load gpii-no-os (which then bootstraps gpii-universal)
+    require("gpii-os-stubs/index.js");
+    gpii.xplat = gpii.osstubs;
+    break;
+}
 
 require("./index.js");
 

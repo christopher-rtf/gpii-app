@@ -27,7 +27,9 @@ require("../../../shared/channelUtils.js");
  * A component that represents the Quick Set Strip.
  */
 fluid.defaults("gpii.app.qss", {
-    gradeNames: ["gpii.app.dialog", "gpii.app.dialog.offScreenHidable", "gpii.app.blurrable"],
+    // TODO: make "offScreenHidable" an OS-specific configuration parameter (enabled on Windows, disabled on macOS and probably Ubuntu)
+    //       [this is necessary on macOS (and probably Ubuntu) to hide the QuickStrip window]
+    gradeNames: ["gpii.app.dialog"/*, "gpii.app.dialog.offScreenHidable"*/, "gpii.app.blurrable"],
 
 
     dialogContentMetrics: {

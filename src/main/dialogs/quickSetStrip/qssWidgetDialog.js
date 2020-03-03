@@ -29,7 +29,9 @@ require("../../../shared/channelUtils.js");
  * changes.
  */
 fluid.defaults("gpii.app.qssWidget", {
-    gradeNames: ["gpii.app.dialog", "gpii.app.blurrable", "gpii.app.dialog.offScreenHidable"],
+    // TODO: make "offScreenHidable" an OS-specific configuration parameter (enabled on Windows, disabled on macOS and probably Ubuntu)
+    //       [this is necessary on macOS (and probably Ubuntu) to hide the QuickStrip window's pop-up widgets]
+    gradeNames: ["gpii.app.dialog", "gpii.app.blurrable"/*, "gpii.app.dialog.offScreenHidable"*/],
 
     /*
      * When setting the size of a `BrowserWindow` Electron sometimes changes its position

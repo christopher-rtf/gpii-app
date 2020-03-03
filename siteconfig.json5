@@ -10,7 +10,7 @@
         osSettingsAvailable: true,
 
         // Determines if the QSS will be shown automatically on Morphic's startup
-        showQssOnStart: false,
+        showQssOnStart: true,
 
         // Defines the delay in milliseconds before the tooltip is shown after a QSS button is selected
         tooltipDisplayDelay: 500, // ms
@@ -176,5 +176,6 @@
     surveyTriggersUrl: "http://survey.gpii.net/survey-triggers.json",
 
     // The type of widget to use in the task bar - "gpii.app.trayButton", "gpii.app.trayIcon", or both.
-    trayType: ["gpii.app.trayButton"]
+//     trayType: ["gpii.app.trayButton"]
+    trayType: ["gpii.app.trayIcon"]
 }

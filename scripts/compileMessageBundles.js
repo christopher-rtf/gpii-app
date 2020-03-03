@@ -22,6 +22,8 @@ var fs = require("fs");
 var path = require("path");
 var shell = require("shelljs");
 
+var os = require("os");
+
 fluid.setLogging(true);
 require("./shared/messageBundlesCompiler.js");
 
@@ -32,7 +34,21 @@ require("./shared/messageBundlesCompiler.js");
  * @param {String}  resultFilePath - The file where the bundles are going to be written.
  */
 gpii.app.compileMessageBundles = function (messageDirs, resultFilePath) {
-    require("gpii-windows/index.js");
+    // NOTE: the OS-specific module is loaded relatively slowly
+    // NOTE: the OS-specific module also loads gpii-universal
+    // NOTE: if the OS-specific module was not installed successfully, the require(".../index.js") call below will throw an exception
+    switch (os.platform()) {
+    case "darwin":
+        require("gpii-macos/index.js");
+        break;
+    case "win32":
+        require("gpii-windows/index.js");
+        break;
+    default:
+        // for unknown platforms, load gpii-os-stubs (which then bootstraps gpii-universal)
+        require("gpii-os-stubs/index.js");
+        break;
+    }
 
     // This is a noop when the folder already exists
     shell.mkdir("-p", path.dirname(resultFilePath));

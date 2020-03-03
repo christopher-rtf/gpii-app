@@ -25,7 +25,7 @@
      * Represents the QSS USB widget.
      */
     fluid.defaults("gpii.qssWidget.openUSB", {
-        gradeNames: ["fluid.viewComponent", "gpii.psp.selectorsTextRenderer"],
+        gradeNames: ["fluid.viewComponent", "gpii.psp.heightObservable", "gpii.psp.selectorsTextRenderer"],
         model: {
             messageChannel: "usbMessageChannel", // Channel listening for messages related to usb mount, unmount functionality
             closeOnBlur: false,
