@@ -35,7 +35,7 @@
         "shelljs": "0.8.2"
     },
     "optionalDependencies": {
-        "gpii-macos": "github:christopher-rtf/gpii-macos#26d7054",
+        "gpii-macos": "github:christopher-rtf/gpii-macos#6e1ed46",
         "gpii-os-stubs": "github:christopher-rtf/gpii-os-stubs#8b79a3b",
         "gpii-windows": "github:christopher-rtf/windows#e0c2a48"
     },
